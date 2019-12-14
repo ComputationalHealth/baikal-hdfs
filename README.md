@@ -11,7 +11,7 @@ Instructions
 1. git clone https://github.com/ComputationalHealth/baikal-hdfs.git
 2. docker-compose up -d --build
 3. docker exec hadoop-namenode /bin/bash startup.sh
-$. Code
+4. Access UI from http://localhost:9090
 
 ### Shutdown:
 1. docker-compose down -v

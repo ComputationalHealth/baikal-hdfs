@@ -12,13 +12,16 @@ const HOST = '0.0.0.0';
 // App
 const app = express();
 
+// View Engine
+app.set('view engine', 'pug')
+
 app.use(bodyParser.json());
 
 const router = getRouter();
 app.use('/', router);
 
 app.get('/', (req, res) => {
-  res.send("Hello World");
+  res.render('index', { title: 'HDFS Demo App', message: 'HDFS Node Example App' })
 });
 
 app.get('/show-routes',  (req, res) => {

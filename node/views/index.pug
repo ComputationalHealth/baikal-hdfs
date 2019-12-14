@@ -1,0 +1,15 @@
+extends layout 
+
+block content
+  h1= message
+  ul
+    li
+      a(href="/hdfs/upload-file") Upload File to HDFS
+    li
+      a(href="/hdfs/files?path=/") Show Files in HDFS Path
+    li
+      a(href="/hdfs/read-file") Read File Contents HDFS
+    li
+      a(href="/show-routes") Show Express Routes
+
+      

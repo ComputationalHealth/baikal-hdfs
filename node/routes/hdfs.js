@@ -1,44 +1,86 @@
 const fs = require('fs');
-const buffer = require('buffer');
+const { PassThrough } = require('stream');
 const express = require('express');
+const formidable = require('formidable');
 const hdfs = require('../webhdfs-client');
 
 function getHdfsRouter() {
   const router = express.Router();
 
-  router.get('/put-file', putFile);
+  router.get('/upload-file', uploadFile);
+  router.post('/upload-file', postFile);
   router.get('/read-file', readFile);
   router.get('/files', readFiles);
-
   return router;
 }
 
-function putFile(req, res, next) {
-  // Write a file to HDFS
-  // Initialize readable stream from local file
-  // Change this to real path in your file system
-  var localFileStream = fs.createReadStream(__dirname + '/testfile2.txt');
+function uploadFile(req, res, next) {
+  res.render('hdfs/upload-file', { title: 'Upload File' });
+}
 
-  // Initialize writable stream to HDFS target
-  var remoteFileStream = hdfs.createWriteStream('/data/testfile3.txt');
+// Write a file to HDFS 
+// 1. Use formidable to get the file from the upload. 
+// 2. Use a pass through stream to load the file data into as it's being uploaded
+//    see the `part.on` section below.
+// 3. Pipe the new file stream into hdfs 
+function postFile(req, res, next) {
+  const form = new formidable.IncomingForm();
+  const pass = new PassThrough();
 
-  // Pipe data to HDFS
-  localFileStream.pipe(remoteFileStream);
+  const fileMeta = {};
 
-  // Handle errors
-  remoteFileStream.on('error', function onError(err) {
-    // Do something with the error
-    console.log('Error:n' + err);
-    res.send('Error uploading file');
+  form.onPart = part => {
+    if (!part.filename) {
+      form.handlePart(part);
+      return;
+    }
+
+    console.log("Part received ...");
+    fileMeta.name = part.filename;
+    fileMeta.type = part.mime;
+    
+    part.on('data', function (buffer) {
+      pass.write(buffer);
+    });
+
+    part.on('end', function () {
+      pass.end();
+    });
+
+  }
+
+  form.parse(req, err => {
+    if (err) {
+      res.send('Error: ' + err);
+    } else {
+      handlePostStream(req, next, fileMeta, pass);
+    }
   });
 
-  // Handle finish event
-  remoteFileStream.on('finish', function onFinish() {
-    // Upload is done
-    console.log("File uploaded successfully");
-    res.send('File uploaded successfully\n');
-  });
+  const handlePostStream = async (req, next, fileMeta, fileStream) => {
+    try {
+      // Put the file into HDFS under the /data directory
+      var remoteFileStream = hdfs.createWriteStream('/data/' + fileMeta.name);
+      fileStream.pipe(remoteFileStream);
 
+      // Handle errors
+      remoteFileStream.on('error', function onError(err) {
+        // Do something with the error
+        console.log('Error:n' + err);
+        res.send('Error uploading file');
+      });
+
+      // Handle finish event
+      remoteFileStream.on('finish', function onFinish() {
+        // Upload is done
+        console.log("File uploaded successfully");
+        res.send('File uploaded successfully\n');
+      });
+    } catch (error) {
+      res.send("Error: " + error);
+    }
+
+  }
 }
 
 function readFile(req, res, next) {

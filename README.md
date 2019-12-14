@@ -1,4 +1,4 @@
-baikal-devenv
+baikal-hdfs
 =============
 This repository contains the Docker components necessary to deploy a local Hadoop and Node development environment. The curren configuration includes 2-node HDFS and a node app.
 

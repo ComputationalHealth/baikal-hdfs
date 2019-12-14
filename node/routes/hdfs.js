@@ -8,6 +8,7 @@ function getHdfsRouter() {
 
   router.get('/put-file', putFile);
   router.get('/read-file', readFile);
+  router.get('/files', readFiles);
 
   return router;
 }
@@ -46,7 +47,7 @@ function readFile(req, res, next) {
   if (req.query.path) {
     let remoteFileStream = hdfs.createReadStream(req.query.path);
 
-      remoteFileStream.on("error", function onError(err) { //handles error while read
+    remoteFileStream.on("error", function onError(err) { //handles error while read
       // Do something with the error
       // res.send('Error Reading File:\n\n' + err)
       errorOccurred = err;
@@ -68,10 +69,25 @@ function readFile(req, res, next) {
         console.log('..file data..', dataStream);
         res.send("File contents:\n" + dataStream.toString('ascii'));
       }
-    
+
     });
   } else {
     throw new Error("'path' parameter is missing in querystring.\nPlease add ?path=/path/to/file to read file contents.");
+  }
+}
+
+function readFiles(req, res, next) {
+  if (req.query.path) {
+    hdfs.readdir(req.query.path, function (err, files) {
+      if (!err) {
+        res.send(files);
+      } else {
+        res.status(500);
+        res.send("Error occurred:<br/>" + err);
+      }
+    });
+  } else {
+    throw new Error("'path' parameter is missing in querystring.\nPlease add ?path=/path/to/file to display directory contents.");
   }
 }
 

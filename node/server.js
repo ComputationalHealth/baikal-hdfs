@@ -1,8 +1,9 @@
 'use strict';
 
 const express = require('express');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
 const getRouter = require('./routes');
+const listEndpoints = require('express-list-endpoints')
 
 // Constants
 const PORT = 8080;
@@ -18,6 +19,10 @@ app.use('/', router);
 
 app.get('/', (req, res) => {
   res.send("Hello World");
+});
+
+app.get('/show-routes',  (req, res) => {
+  res.send(listEndpoints(app));
 });
 
 app.listen(PORT, HOST);

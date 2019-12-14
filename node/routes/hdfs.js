@@ -41,28 +41,38 @@ function putFile(req, res, next) {
 }
 
 function readFile(req, res, next) {
-  let remoteFileStream = hdfs.createReadStream('/data/testfile.txt');
+  let errorOccurred = null;
 
-  remoteFileStream.on("error", function onError(err) { //handles error while read
-    // Do something with the error
-    res.send('Error Reading File: ' + err)
-  });
+  if (req.query.path) {
+    let remoteFileStream = hdfs.createReadStream(req.query.path);
 
-  let dataStream = [];
-  remoteFileStream.on("data", function onChunk(chunk) { //on read success
-    // Do something with the data chunk 
-    dataStream.push(chunk);
-    console.log('..chunk..', chunk);
-  });
+      remoteFileStream.on("error", function onError(err) { //handles error while read
+      // Do something with the error
+      // res.send('Error Reading File:\n\n' + err)
+      errorOccurred = err;
+    });
 
-  remoteFileStream.on("finish", function onFinish() { //on read finish
-    console.log('..on finish..');
-    console.log('..file data..', dataStream);
-    res.send("File contents:\n" + dataStream.toString('ascii'));
-  });
+    let dataStream = [];
+    remoteFileStream.on("data", function onChunk(chunk) { //on read success
+      // Do something with the data chunk 
+      dataStream.push(chunk);
+      console.log('..chunk..', chunk);
+    });
 
-
-
+    remoteFileStream.on("finish", function onFinish() { //on read finish
+      console.log('..on finish..');
+      if (errorOccurred) {
+        res.status(500);
+        res.send("Error occurred:<br/>" + errorOccurred);
+      } else {
+        console.log('..file data..', dataStream);
+        res.send("File contents:\n" + dataStream.toString('ascii'));
+      }
+    
+    });
+  } else {
+    throw new Error("'path' parameter is missing in querystring.\nPlease add ?path=/path/to/file to read file contents.");
+  }
 }
 
 module.exports = { getHdfsRouter }

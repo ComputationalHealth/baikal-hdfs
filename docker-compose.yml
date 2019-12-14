@@ -1,0 +1,87 @@
+
+version: '3'
+
+services:
+  # db:
+  #   build: ./postgres
+  #   container_name: db
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_USER: "admin"
+  #     POSTGRES_PASSWORD: "admin"
+  #     POSTGRES_DB: "admin"
+  #     SCALE_PCORNET: 10
+  #   networks:
+  #     vpcbr:
+  #       ipv4_address: 10.6.0.153
+
+  web:
+    build: ./node
+    container_name: web
+    hostname: web
+    ports:
+      - "9090:8080"
+    volumes:
+      - ./node:/usr/src/app
+      # - ./node/node_modules:/usr/src/app/node_modules
+
+  # hadoop-namenode:
+  #   build: ./hadoop
+  #   container_name: hadoop-namenode
+  #   hostname: hadoop-namenode
+  #   ports: # HOST:CONTAINER
+  #     - "2222:2222"
+  #     - "4040:4040"
+  #     - "5678:5678"
+  #     - "7077:7077"
+  #     - "8020:8020"
+  #     - "8088:8088"
+  #     - "9001:9001"
+  #     - "50070:50070"
+  #     - "50090:50090"
+  #   expose:
+  #     - "8030-8050"
+  #   environment:
+  #     - HDFS_REPLICATION_FACTOR=1
+  #     - HADOOP_NAMENODE_HOST=hadoop-namenode
+  #   volumes:
+  #     - ./hadoop/startup.sh:/root/startup.sh
+  #     - "../home/${USER}/code:/home/hadoop/code"
+  #     - ./hadoop/slaves-config:/config:ro
+  #     - ./hadoop/deployments:/deployments:ro
+  #   tty: true
+  #   networks:
+  #     vpcbr:
+  #       ipv4_address: 10.6.0.157
+
+  # hadoop-datanode1:
+  #   build: ./hadoop
+  #   container_name: hadoop-datanode1
+  #   hostname: hadoop-datanode1
+  #   ports:
+  #     - "8042:8042"
+  #     - "50075:50075"
+  #   expose:
+  #     - "34000-48000"
+  #     - "50010"
+  #     - "50020"
+  #     - "50040"
+  #   environment:
+  #     - HDFS_REPLICATION_FACTOR=1
+  #     - HADOOP_NAMENODE_HOST=hadoop-namenode
+  #   volumes:
+  #     - ./hadoop/slaves-config:/config:ro
+  #   links:
+  #     - hadoop-namenode
+  #   tty: true
+  #   networks:
+  #     vpcbr:
+  #       ipv4_address: 10.6.0.158
+
+# networks:
+#   vpcbr:
+#     driver: bridge
+#     ipam:
+#       config:
+#         - subnet: 10.6.0.0/24

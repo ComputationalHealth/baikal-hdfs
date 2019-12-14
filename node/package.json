@@ -1,0 +1,21 @@
+{
+  "name": "node-hdfs-example",
+  "version": "1.0.0",
+  "description": "Node.js to HDFS Example",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start.dev": "nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Donn Felker",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "request": "^2.88.0",
+    "webhdfs": "^1.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}

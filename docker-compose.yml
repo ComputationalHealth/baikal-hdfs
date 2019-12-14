@@ -25,6 +25,8 @@ services:
     volumes:
       - ./node:/usr/src/app
       # - ./node/node_modules:/usr/src/app/node_modules
+    networks: 
+      vpcbr:
 
   hadoop-namenode:
     build: ./hadoop

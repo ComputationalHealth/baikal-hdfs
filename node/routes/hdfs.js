@@ -1,4 +1,5 @@
 const fs = require('fs');
+const buffer = require('buffer');
 const express = require('express');
 const hdfs = require('../webhdfs-client');
 
@@ -6,6 +7,7 @@ function getHdfsRouter() {
   const router = express.Router();
 
   router.get('/put-file', putFile);
+  router.get('/read-file', readFile);
 
   return router;
 }
@@ -35,6 +37,31 @@ function putFile(req, res, next) {
     console.log("File uploaded successfully");
     res.send('File uploaded successfully\n');
   });
+
+}
+
+function readFile(req, res, next) {
+  let remoteFileStream = hdfs.createReadStream('/data/testfile.txt');
+
+  remoteFileStream.on("error", function onError(err) { //handles error while read
+    // Do something with the error
+    res.send('Error Reading File: ' + err)
+  });
+
+  let dataStream = [];
+  remoteFileStream.on("data", function onChunk(chunk) { //on read success
+    // Do something with the data chunk 
+    dataStream.push(chunk);
+    console.log('..chunk..', chunk);
+  });
+
+  remoteFileStream.on("finish", function onFinish() { //on read finish
+    console.log('..on finish..');
+    console.log('..file data..', dataStream);
+    res.send("File contents:\n" + dataStream.toString('ascii'));
+  });
+
+
 
 }
 
